@@ -26,15 +26,27 @@ export function useKaTeX(deps = []) {
   useEffect(() => {
     let handle;
     if (ref.current && renderMathInElement) {
+      // First attempt after a short delay
       handle = setTimeout(() => {
-        if (ref.current) renderMathInElement(ref.current, KATEX_OPTIONS);
-      }, 50);
+        if (ref.current) {
+          renderMathInElement(ref.current, KATEX_OPTIONS);
+        }
+      }, 100);
+
+      // Second attempt (safety net) in case fonts/layout took longer
+      const handle2 = setTimeout(() => {
+        if (ref.current) {
+          renderMathInElement(ref.current, KATEX_OPTIONS);
+        }
+      }, 500);
+
+      return () => {
+        clearTimeout(handle);
+        clearTimeout(handle2);
+      };
     } else if (!renderMathInElement) {
       console.error('KaTeX auto-render not found!', autoRender);
     }
-    return () => {
-      clearTimeout(handle);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
