@@ -50,7 +50,7 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
       {/* ── Left sidebar ────────────────────────────────────────────────── */}
       <div className="left">
         {/* Distributions & Note */}
-        <div className="card">
+        <div className="card" id="step-dist-selector">
           <div className="sec-label">Distributions</div>
           <DistributionSelector groupKey={groupKey} onSelect={onGroupSelect} />
           {page.display?.note && (
@@ -59,7 +59,7 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
         </div>
 
         {/* PMF formula */}
-        <div className="card">
+        <div className="card" id="step-formula">
           <div className="sec-label">Formula</div>
           <div className="formula-box" ref={formulaRef}>
             <div dangerouslySetInnerHTML={{ __html: page.display?.formula?.(state.params) ?? '' }} />
@@ -68,7 +68,7 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
 
         {/* Parameters */}
         {paramDefs.length > 0 && (
-          <div className="card">
+          <div className="card" id="step-parameters">
             <div className="section-head">
               <span className="sec-label">Parameters</span>
               <button className="mini-btn" type="button" onClick={resetParams}>Reset</button>
@@ -110,7 +110,7 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
       {/* ── Right panel ─────────────────────────────────────────────────── */}
       <div className="right">
         <div className="chart-wrap">
-          <div className="topbar">
+          <div className="topbar" id="step-chart-controls">
             <div className="chart-left">
               <span className="sec-label">Chart</span>
               <div className="series-toggle">
@@ -161,7 +161,7 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
 
         {/* Calculator with show/hide toggle */}
         {!page.hideCalculator && (
-          <div>
+          <div id="step-calculator">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <label className="show-calc-toggle">
                 <input

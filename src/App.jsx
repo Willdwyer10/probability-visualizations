@@ -10,6 +10,7 @@ import { VersionTabs } from './components/VersionTabs.jsx';
 import { DiscreteView } from './components/DiscreteView.jsx';
 import { ContinuousView } from './components/ContinuousView.jsx';
 import { SpecialView } from './components/SpecialView.jsx';
+import { WalkthroughDemoButton } from './components/WalkthroughDemo.jsx';
 
 function HelpModal({ onClose }) {
   return (
@@ -104,6 +105,7 @@ export default function App() {
                 onChange={onTabChange}
               />
             )}
+            <WalkthroughDemoButton />
             <button className="header-mini-btn" type="button" onClick={() => setShowHelp(true)}>Help</button>
             <button className="header-mini-btn" style={{ padding: '3px 6px' }} type="button" onClick={() => setShowCopyright(true)}>©</button>
           </div>
