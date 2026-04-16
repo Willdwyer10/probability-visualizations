@@ -1,19 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useKaTeX } from '../hooks/useKaTeX.js';
 import { latexNum, clamp, clampProb } from '../utils/math.js';
+import { BufferedNumberInput } from './BufferedNumberInput.jsx';
 
 /**
  * Discrete probability calculator.
- * Shows P(X = x), P(X ≤ x), P(X ≥ x), and quantile.
  */
 export function DiscreteCalculator({ page, params, cache, getCdf, getQuantile }) {
   const [x, setX] = useState(() => cache.displaySupport[0]);
   const [pL, setPL] = useState(0.95);
 
-  // Reset x when the display range changes (e.g. after parameter update)
   const [a, b] = cache.displaySupport;
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setX(prev => clamp(Math.round(prev), a, b));
   }, [a, b]);
 
@@ -29,74 +27,58 @@ export function DiscreteCalculator({ page, params, cache, getCdf, getQuantile })
   const qVal      = getQuantile(pL);
 
   const rCode = page?.rCode ?? {};
-
   const katexRef = useKaTeX([x, pL, pmfVal, cdfVal, ccdfVal, qVal, varSym, valSym]);
 
   return (
     <div className="calc-wrap" ref={katexRef}>
-      <div className="sec-label">Calculator</div>
+      <div className="sec-label">GRAPHICAL CALCULATOR WITH R CODE</div>
       <div className="calc-panels">
 
         {/* ── PMF / CDF panel ── */}
         <div className="calc-panel">
           <div className="calc-input-row">
-            <label>{'$' + valSym + '$'}</label>
+            <label>{'Cutoff: $' + valSym + '$'}</label>
             <input
               type="range"
               min={a} max={b} step={1}
               value={xClamped}
               onChange={e => setX(parseInt(e.target.value, 10))}
             />
-            <input
-              type="number"
+            <BufferedNumberInput
               min={a} max={b} step={1}
               value={xClamped}
-              onChange={e => {
-                const v = parseInt(e.target.value, 10);
-                if (Number.isFinite(v)) setX(v);
-              }}
+              onCommit={v => setX(clamp(Math.round(v), a, b))}
             />
           </div>
           <div className="calc-results">
             <div className="calc-result-row">
               <div className="calc-result-top">
                 <div className="calc-result-meaning">
-                  {'$P(' + varSym + ' = ' + xClamped + ')$'}
+                  <div key={xClamped}><b>PMF:</b> {'$p(' + xClamped + ') = P(' + varSym + ' = ' + xClamped + ')$'}</div>
+                  {rCode.pmf && (
+                    <div className="calc-code-row" style={{ marginTop: '4px' }}>
+                      <span className="calc-code-inline" dangerouslySetInnerHTML={{ __html: 'R code: ' + (rCode.pmf(params)) }} />
+                    </div>
+                  )}
                 </div>
                 <div className="calc-result-value">
                   <span className="result-val">{latexNum(pmfVal, 4)}</span>
                 </div>
               </div>
-              {rCode.pmf && (
-                <div className="calc-code-row">
-                  <span className="calc-code-inline" dangerouslySetInnerHTML={{ __html: rCode.pmf(params) }} />
-                </div>
-              )}
             </div>
 
             <div className="calc-result-row">
               <div className="calc-result-top">
                 <div className="calc-result-meaning">
-                  {'$P(' + varSym + ' \\le ' + xClamped + ')$'}
+                  <div key={xClamped}><b>CDF:</b> {'$F(' + xClamped + ') = P(' + varSym + ' \\le ' + xClamped + ')$'}</div>
+                  {rCode.cdf && (
+                    <div className="calc-code-row" style={{ marginTop: '4px' }}>
+                      <span className="calc-code-inline" dangerouslySetInnerHTML={{ __html: 'R code: ' + (rCode.cdf(params)) }} />
+                    </div>
+                  )}
                 </div>
                 <div className="calc-result-value">
                   <span className="result-val">{latexNum(cdfVal, 4)}</span>
-                </div>
-              </div>
-              {rCode.cdf && (
-                <div className="calc-code-row">
-                  <span className="calc-code-inline" dangerouslySetInnerHTML={{ __html: rCode.cdf(params) }} />
-                </div>
-              )}
-            </div>
-
-            <div className="calc-result-row">
-              <div className="calc-result-top">
-                <div className="calc-result-meaning">
-                  {'$P(' + varSym + ' \\ge ' + xClamped + ')$'}
-                </div>
-                <div className="calc-result-value">
-                  <span className="result-val">{latexNum(ccdfVal, 4)}</span>
                 </div>
               </div>
             </div>
@@ -106,28 +88,30 @@ export function DiscreteCalculator({ page, params, cache, getCdf, getQuantile })
         {/* ── Quantile panel ── */}
         <div className="calc-panel">
           <div className="calc-input-row">
-            <label>$p_L$</label>
+            <label>{'Left prob: $p_L$'}</label>
             <input
               type="range"
               min={0} max={1} step={0.001}
               value={pL}
               onChange={e => setPL(parseFloat(e.target.value))}
             />
-            <input
-              type="number"
+            <BufferedNumberInput
               min={0} max={1} step={0.001}
               value={pL}
-              onChange={e => {
-                const v = parseFloat(e.target.value);
-                if (Number.isFinite(v)) setPL(clamp(v, 0, 1));
-              }}
+              displayFormatter={v => latexNum(v, 4)}
+              onCommit={v => setPL(clamp(v, 0, 1))}
             />
           </div>
           <div className="calc-results">
             <div className="calc-result-row">
               <div className="calc-result-top">
                 <div className="calc-result-meaning">
-                  {'Smallest $' + valSym + '$ such that $P(' + varSym + '\\le ' + valSym + ')\\ge p_L = ' + latexNum(pL, 4) + '$'}
+                  <div><b>Quantile:</b> {'$Q(p_L = ' + latexNum(pL, 4) + ') = \\min \\{ ' + valSym + ' : P(' + varSym + ' \\le ' + valSym + ') \\ge ' + latexNum(pL, 4) + ' \\} $'}</div>
+                  {rCode.q && (
+                    <div className="calc-code-row" style={{ marginTop: '4px' }}>
+                      <span className="calc-code-inline" dangerouslySetInnerHTML={{ __html: 'R code: ' + (rCode.q(params)) }} />
+                    </div>
+                  )}
                 </div>
                 <div className="calc-result-value">
                   <span className="result-val">
@@ -135,11 +119,6 @@ export function DiscreteCalculator({ page, params, cache, getCdf, getQuantile })
                   </span>
                 </div>
               </div>
-              {rCode.q && (
-                <div className="calc-code-row">
-                  <span className="calc-code-inline" dangerouslySetInnerHTML={{ __html: rCode.q(params) }} />
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -47,18 +47,23 @@ export function DistributionSelector({ groupKey, onSelect }) {
           {MASTER_ORDER.map(cat => (
             <div key={cat.category}>
               <div className="dist-dropdown-group-label">{cat.category}</div>
-              {cat.keys.map(key => (
-                <button
-                  key={key}
-                  className={`dist-dropdown-item${key === groupKey ? ' selected' : ''}`}
-                  role="option"
-                  aria-selected={key === groupKey}
-                  type="button"
-                  onClick={() => handleSelect(key)}
-                >
-                  {MASTER_GROUPS[key]?.label ?? key}
-                </button>
-              ))}
+              {cat.keys.map((key, i) => {
+                if (key === '__SEP__') {
+                  return <div key={`sep-${i}`} className="dist-dropdown-separator" />;
+                }
+                return (
+                  <button
+                    key={key}
+                    className={`dist-dropdown-item${key === groupKey ? ' selected' : ''}`}
+                    role="option"
+                    aria-selected={key === groupKey}
+                    type="button"
+                    onClick={() => handleSelect(key)}
+                  >
+                    {MASTER_GROUPS[key]?.label ?? key}
+                  </button>
+                );
+              })}
             </div>
           ))}
         </div>

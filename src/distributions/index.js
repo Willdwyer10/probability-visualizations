@@ -46,18 +46,18 @@ export const MASTER_GROUPS = {
 
   // ---- Special ----------------------------------------------------------------
   gammaFunction:   { key: 'gammaFunction',   label: 'Gamma function',                                       engine: 'special',    special: SPECIAL_PAGES.gammaFunction },
-  betaFunction:    { key: 'betaFunction',    label: 'Beta function',                                         engine: 'special',    special: SPECIAL_PAGES.betaFunction },
+  betaFunction:    { key: 'betaFunction',    label: 'Beta function (optional in STAT311)',          engine: 'special',    special: SPECIAL_PAGES.betaFunction },
 };
 
 // ── Display order and category groupings ─────────────────────────────────────
 export const MASTER_ORDER = [
   {
     category: 'Discrete distributions',
-    keys: ['bernoulli', 'binomial', 'hypergeometric', 'geometric', 'negativeBinomial', 'poisson'],
+    keys: ['bernoulli', 'binomial', 'hypergeometric', '__SEP__', 'poisson', '__SEP__', 'geometric', 'negativeBinomial', '__SEP__'],
   },
   {
     category: 'Continuous distributions',
-    keys: ['normal', 'lognormal', 'ged', 't', 'uniform', 'beta', 'exponential', 'gamma', 'weibull', 'chisquare'],
+    keys: ['normal', 'lognormal', 'ged', 't', '__SEP__', 'uniform', 'beta', '__SEP__', 'exponential', 'gamma', 'weibull', 'chisquare', '__SEP__'],
   },
   {
     category: 'Special function pages',

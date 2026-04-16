@@ -53,7 +53,10 @@ function getDefaultTitleHtml(group, tabIndex) {
   const resolved = typeof defs === 'function' ? defs({}) : defs;
   const p = {};
   (resolved ?? []).forEach(d => { p[d.id ?? d.key] = d.value; });
-  return page.display?.title?.(p) ?? page.label ?? group.label ?? '';
+  const title = page.display?.title?.(p) ?? page.label ?? group.label ?? '';
+  const version = (page.tabLong && page.name && !page.name.includes(page.tabLong)) ? ` (${page.tabLong})` : '';
+  const prefix = page.name ? `${page.name}${version}: ` : '';
+  return prefix + title;
 }
 
 export default function App() {

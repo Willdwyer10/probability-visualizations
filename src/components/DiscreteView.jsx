@@ -25,12 +25,15 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
 
   const paramDefs = getParamDefs();
   const formulaRef = useKaTeX([page, state.params]);
+  const noteRef    = useKaTeX([page, state.params]);
 
   // Push live title update to App header whenever params change
   useEffect(() => {
     if (!page || !onTitleChange) return;
-    const html = page.display?.title?.(state.params) ?? '';
-    onTitleChange(html);
+    const title = page.display?.title?.(state.params) ?? '';
+    const version = (page.tabLong && page.name && !page.name.includes(page.tabLong)) ? ` (${page.tabLong})` : '';
+    const prefix = page.name ? `${page.name}${version}: ` : '';
+    onTitleChange(prefix + title);
   }, [page, state.params, onTitleChange]);
 
   // Axis toggles
@@ -54,16 +57,10 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
           <div className="sec-label">Distributions</div>
           <DistributionSelector groupKey={groupKey} onSelect={onGroupSelect} />
           {page.display?.note && (
-            <div className="dist-note" style={{ marginTop: '8px' }}>{page.display.note(state.params)}</div>
+            <div className="dist-note" style={{ marginTop: '8px' }} ref={noteRef}>
+              <div dangerouslySetInnerHTML={{ __html: page.display.note(state.params) }} />
+            </div>
           )}
-        </div>
-
-        {/* PMF formula */}
-        <div className="card" id="step-formula">
-          <div className="sec-label">Formula</div>
-          <div className="formula-box" ref={formulaRef}>
-            <div dangerouslySetInnerHTML={{ __html: page.display?.formula?.(state.params) ?? '' }} />
-          </div>
         </div>
 
         {/* Parameters */}
@@ -71,7 +68,6 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
           <div className="card" id="step-parameters">
             <div className="section-head">
               <span className="sec-label">Parameters</span>
-              <button className="mini-btn" type="button" onClick={resetParams}>Reset</button>
             </div>
             <ParameterControls
               page={page}
@@ -82,12 +78,21 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
           </div>
         )}
 
+        {/* PMF formula */}
+        <div className="card" id="step-formula">
+          <div className="sec-label">PMF FORMULA</div>
+          <div className="formula-box" ref={formulaRef}>
+            <div dangerouslySetInnerHTML={{ __html: page.display?.formula?.(state.params) ?? '' }} />
+          </div>
+        </div>
+
         {/* Properties */}
         <PropertiesTable
           page={page}
           params={state.params}
           collapsed={state.propsCollapsed}
           onToggle={() => dispatch({ type: 'TOGGLE_PROPS' })}
+          onReset={resetParams}
         />
 
         {/* PMF table */}
@@ -112,7 +117,7 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
         <div className="chart-wrap">
           <div className="topbar" id="step-chart-controls">
             <div className="chart-left">
-              <span className="sec-label">Chart</span>
+              <span className="sec-label">VISUALIZATION</span>
               <div className="series-toggle">
                 <label className="series-item">
                   <input
@@ -138,12 +143,12 @@ export function DiscreteView({ groupKey, tabIndex, onTitleChange, onGroupSelect 
               <div className="axis-btn-group">
                 <span>x-axis:</span>
                 <button className={`axis-btn${state.xAxisMode === 'auto'  ? ' active' : ''}`} type="button" onClick={() => dispatch({ type: 'SET_X_AUTO' })}>Auto</button>
-                <button className={`axis-btn${state.xAxisMode === 'fixed' ? ' active' : ''}`} type="button" onClick={toggleXFixed}>Fixed</button>
+                <button className={`axis-btn${state.xAxisMode === 'fixed' ? ' active' : ''}`} type="button" onClick={toggleXFixed}>Lock current</button>
               </div>
               <div className="axis-btn-group">
                 <span>y-axis:</span>
                 <button className={`axis-btn${state.yAxisMode === 'auto'  ? ' active' : ''}`} type="button" onClick={() => dispatch({ type: 'SET_Y_AUTO' })}>Auto</button>
-                <button className={`axis-btn${state.yAxisMode === 'fixed' ? ' active' : ''}`} type="button" onClick={toggleYFixed}>Fixed</button>
+                <button className={`axis-btn${state.yAxisMode === 'fixed' ? ' active' : ''}`} type="button" onClick={toggleYFixed}>Fixed [0, 1]</button>
               </div>
             </div>
           </div>

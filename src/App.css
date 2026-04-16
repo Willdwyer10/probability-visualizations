@@ -377,6 +377,12 @@ body {
   font-weight: 600;
 }
 
+.dist-dropdown-separator {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 2px 0;
+}
+
 /* ── Param table ─────────────────────────────────────────────────────────── */
 select, input[type="number"] {
   color: var(--input);

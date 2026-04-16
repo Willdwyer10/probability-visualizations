@@ -2,7 +2,7 @@ import { useKaTeX } from '../hooks/useKaTeX.js';
 import { ensureTrailingColon } from '../utils/math.js';
 
 /** Renders the properties table for either discrete or continuous pages. */
-export function PropertiesTable({ page, params, collapsed, onToggle }) {
+export function PropertiesTable({ page, params, collapsed, onToggle, onReset }) {
   // Resolve properties array — discrete uses `properties`, continuous uses `props`
   const rawProps = page?.properties ?? page?.props;
   const props = typeof rawProps === 'function' ? rawProps(params) : (rawProps || []);
@@ -13,6 +13,9 @@ export function PropertiesTable({ page, params, collapsed, onToggle }) {
     <div className="card">
       <div className="section-head">
         <span className="sec-label">Properties</span>
+        {onReset && (
+          <button className="mini-btn" type="button" onClick={onReset}>Reset</button>
+        )}
         <button
           className="collapse-btn"
           type="button"

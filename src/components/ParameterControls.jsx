@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useKaTeX } from '../hooks/useKaTeX.js';
 import { ensureTrailingColon, clamp, snapToStep, formatInputNumber } from '../utils/math.js';
+import { BufferedNumberInput } from './BufferedNumberInput.jsx';
 
 /**
  * Renders a table of parameter sliders + number inputs.
@@ -22,22 +23,12 @@ export function ParameterControls({ params, paramDefs, onParamChange }) {
     onParamChange(def.id, v);
   }, [onParamChange]);
 
-  const handleNumberBlur = useCallback((e, def) => {
-    const raw = parseFloat(e.target.value);
-    const prev = params[def.id];
-    if (!Number.isFinite(raw) || raw < def.min || raw > def.max) {
-      e.target.value = formatInputNumber(prev, def.step ?? 1);
-      return;
-    }
+  const handleCommit = useCallback((raw, def) => {
     let v = clamp(raw, def.min, def.max);
     v = snapToStep(v, def.min, def.step ?? 1);
     if ((def.step ?? 1) >= 1) v = Math.round(v);
     onParamChange(def.id, v);
-  }, [params, onParamChange]);
-
-  const handleNumberKey = useCallback((e, def) => {
-    if (e.key === 'Enter') { e.preventDefault(); handleNumberBlur(e, def); e.target.blur(); }
-  }, [handleNumberBlur]);
+  }, [onParamChange]);
 
   if (!paramDefs || paramDefs.length === 0) {
     return (
@@ -54,7 +45,6 @@ export function ParameterControls({ params, paramDefs, onParamChange }) {
       <tbody>
         {paramDefs.map(def => {
           const val = params[def.id];
-          const fmtVal = formatInputNumber(val, def.step ?? 1);
           return (
             <tr key={def.id}>
               <td><b>{ensureTrailingColon(def.note || '')}</b></td>
@@ -70,16 +60,14 @@ export function ParameterControls({ params, paramDefs, onParamChange }) {
                     value={val}
                     onChange={e => handleSlider(e, def)}
                   />
-                  <input
-                    type="number"
+                  <BufferedNumberInput
                     id={`param-num-${def.id}`}
                     min={def.min}
                     max={def.max}
                     step={def.step ?? 1}
-                    defaultValue={fmtVal}
-                    key={fmtVal}
-                    onBlur={e => handleNumberBlur(e, def)}
-                    onKeyDown={e => handleNumberKey(e, def)}
+                    value={val}
+                    displayFormatter={(v) => formatInputNumber(v, def.step ?? 1)}
+                    onCommit={(raw) => handleCommit(raw, def)}
                   />
                 </div>
               </td>
